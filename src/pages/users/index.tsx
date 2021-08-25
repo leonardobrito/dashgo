@@ -1,11 +1,34 @@
-import { Box, Button, Checkbox, Flex, Heading, Icon, Table, Tbody, Td, Text, Th, Thead, Tr, useBreakpointValue } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Flex,
+  Heading,
+  Icon,
+  Spinner,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useBreakpointValue,
+} from "@chakra-ui/react";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
+import { useQuery } from 'react-query'
 import Link from "next/link";
 
 export default function UserList() {
+  const { data, isLoading, error } = useQuery('users', async () => {
+    const response = await fetch('http://localhost:3000/api/users')
+    const data = await response.json()
+    return data
+  })
+
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
@@ -48,51 +71,63 @@ export default function UserList() {
             </Link>
           </Flex>
 
-          <Table colorScheme="whiteAlpha">
-            <Thead>
-              <Tr>
-                <Th
-                  color="gray.300"
-                  px={["4", "4", "6"]}
-                  width="8"
-                >
-                  <Checkbox colorScheme="pink" />
-                </Th>
-                <Th>Usuário</Th>
-                { isWideVersion && <Th>Data de cadastro</Th> }
-                <Th width="8"></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              <Tr>
-                <Td px={["4", "4", "6"]}>
-                  <Checkbox colorScheme="pink" />
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight="bold">Leonardo Brito</Text>
-                    <Text color="gray.300" fontSize="sm">f.leobrito@gmail.com</Text>
-                  </Box>
-                </Td>
-                { isWideVersion && <Td>04 de Abril, 2021</Td> }
-                <Td>
-                  <Link href="/users/edit" passHref>
-                    <Button
-                      as="a"
-                      colorScheme="purple"
-                      fontSize="sm"
-                      leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
-                      size="sm"
+          { isLoading ? (
+            <Flex justify="center">
+              <Spinner />
+            </Flex>
+          ) : error ? (
+            <Flex justify="center">
+              <Text>Falha ao obter os dados do usuário.</Text>
+            </Flex>
+          ) : (
+            <>
+              <Table colorScheme="whiteAlpha">
+                <Thead>
+                  <Tr>
+                    <Th
+                      color="gray.300"
+                      px={["4", "4", "6"]}
+                      width="8"
                     >
-                      Editar
-                    </Button>
-                  </Link>
-                </Td>
-              </Tr>
-            </Tbody>
-          </Table>
+                      <Checkbox colorScheme="pink" />
+                    </Th>
+                    <Th>Usuário</Th>
+                    { isWideVersion && <Th>Data de cadastro</Th> }
+                    <Th width="8"></Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  <Tr>
+                    <Td px={["4", "4", "6"]}>
+                      <Checkbox colorScheme="pink" />
+                    </Td>
+                    <Td>
+                      <Box>
+                        <Text fontWeight="bold">Leonardo Brito</Text>
+                        <Text color="gray.300" fontSize="sm">f.leobrito@gmail.com</Text>
+                      </Box>
+                    </Td>
+                    { isWideVersion && <Td>04 de Abril, 2021</Td> }
+                    <Td>
+                      <Link href="/users/edit" passHref>
+                        <Button
+                          as="a"
+                          colorScheme="purple"
+                          fontSize="sm"
+                          leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
+                          size="sm"
+                        >
+                          Editar
+                        </Button>
+                      </Link>
+                    </Td>
+                  </Tr>
+                </Tbody>
+              </Table>
 
-          <Pagination />
+              <Pagination />
+            </>
+          )}
         </Box>
       </Flex>
     </Box>
