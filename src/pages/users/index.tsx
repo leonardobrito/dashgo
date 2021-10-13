@@ -5,6 +5,7 @@ import {
   Flex,
   Heading,
   Icon,
+  IconButton,
   Spinner,
   Table,
   Tbody,
@@ -14,35 +15,16 @@ import {
   Thead,
   Tr,
   useBreakpointValue,
-} from "@chakra-ui/react";
-import { RiAddLine, RiPencilLine } from "react-icons/ri";
-import { Header } from "../../components/Header";
-import { Pagination } from "../../components/Pagination";
-import { Sidebar } from "../../components/Sidebar";
-import { useQuery } from 'react-query'
-import Link from "next/link";
+} from '@chakra-ui/react'
+import { RiAddLine, RiPencilLine, RiRefreshLine } from 'react-icons/ri'
+import { Header } from '../../components/Header'
+import { Pagination } from '../../components/Pagination'
+import { Sidebar } from '../../components/Sidebar'
+import Link from 'next/link'
+import { useUsers } from '../../services/hooks/useUsers'
 
 export default function UserList() {
-  const { data, isLoading, error } = useQuery('users', async () => {
-    const response = await fetch('http://localhost:3000/api/users')
-    const data = await response.json()
-    const users = data.users.map((user) => {
-      return {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric',
-        }),
-      }
-    })
-
-    return users
-  }, {
-    staleTime: 1000 * 5, // 5 seconds
-  })
+  const { data, isFetching, isLoading, error, refetch } = useUsers()
 
   const isWideVersion = useBreakpointValue({
     base: false,
@@ -72,21 +54,41 @@ export default function UserList() {
             justify="space-between"
             mb="8"
           >
-            <Heading fontWeight="normal" size="lg">Usuários</Heading>
-            <Link href="/users/create" passHref>
-              <Button
-                as="a"
-                colorScheme="pink"
-                fontSize="sm"
-                leftIcon={<Icon as={RiAddLine} fontSize="20"/>}
-                size="sm"
+            <Heading fontWeight="normal" size="lg">
+              Usuários
+
+              {!isLoading && isFetching && <Spinner size="sm" color="gray.500" ml="4" />}
+            </Heading>
+
+
+            <div>
+              {!isLoading && <IconButton
+                isDisabled={isFetching}
+                mr="2"
+                variant="ghost"
+                colorScheme="gray.500"
+                aria-label="Reload data"
+                fontSize="20px"
+                icon={<RiRefreshLine />}
+                onClick={() => refetch()}
+              />
+              }
+
+              <Link href="/users/create" passHref>
+                <Button
+                  as="a"
+                  colorScheme="pink"
+                  fontSize="sm"
+                  leftIcon={<Icon as={RiAddLine} fontSize="20" />}
+                  size="sm"
                 >
-                Criar novo
-              </Button>
-            </Link>
+                  Criar novo
+                </Button>
+              </Link>
+            </div>
           </Flex>
 
-          { isLoading ? (
+          {isLoading ? (
             <Flex justify="center">
               <Spinner />
             </Flex>
@@ -101,20 +103,20 @@ export default function UserList() {
                   <Tr>
                     <Th
                       color="gray.300"
-                      px={["4", "4", "6"]}
+                      px={['4', '4', '6']}
                       width="8"
                     >
                       <Checkbox colorScheme="pink" />
                     </Th>
                     <Th>Usuário</Th>
-                    { isWideVersion && <Th>Data de cadastro</Th> }
+                    {isWideVersion && <Th>Data de cadastro</Th>}
                     <Th width="8"></Th>
                   </Tr>
                 </Thead>
                 <Tbody>
                   {data.map(user => (
                     <Tr key={user.id}>
-                      <Td px={["4", "4", "6"]}>
+                      <Td px={['4', '4', '6']}>
                         <Checkbox colorScheme="pink" />
                       </Td>
                       <Td>
@@ -123,7 +125,7 @@ export default function UserList() {
                           <Text color="gray.300" fontSize="sm">{user.email}</Text>
                         </Box>
                       </Td>
-                      { isWideVersion && <Td>{user.createdAt}</Td> }
+                      {isWideVersion && <Td>{user.createdAt}</Td>}
                       <Td>
                         <Link href="/users/edit" passHref>
                           <Button
